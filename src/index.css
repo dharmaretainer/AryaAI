@@ -1,0 +1,10 @@
+@import "tailwindcss";
+body {
+    background-image: url("./assets/veryfinalbg.png");
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed; 
+    background-position: center center;
+    height: 100vh; 
+    margin: 0;
+}
