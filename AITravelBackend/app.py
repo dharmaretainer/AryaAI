@@ -10,8 +10,8 @@ CORS(app)
 # Simple in-memory storage for queries (in production, use a database)
 queries_db = []
 
-OPENROUTER_API_KEY = "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"
-
+import os
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 headers = {
     "Authorization": f"Bearer {OPENROUTER_API_KEY}",
     "Content-Type": "application/json"
