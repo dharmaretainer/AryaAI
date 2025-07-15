@@ -41,7 +41,7 @@ function App() {
               <div className="flex items-center">
                 <Link to="/" className="flex items-center gap-2 text-xl font-bold text-gray-800 hover:text-green-800">
                   <img src={logo} alt="Logo" className="h-8 w-8" />
-                  <span className="text-lg font-semibold">АячаАЇ</span>
+                  <span className="text-lg font-semibold">ΛЯYΛΛI</span>
                 </Link>
               </div>
               <div className="flex items-center space-x-4">
