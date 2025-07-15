@@ -16,10 +16,10 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const analyticsResponse = await axios.get('http://127.0.0.1:5000/admin/analytics');
+        const analyticsResponse = await axios.get('https://aryaai-travel-agent.onrender.com/admin/analytics');
         setAnalytics(analyticsResponse.data);
 
-        const queriesResponse = await axios.get('http://127.0.0.1:5000/admin/queries');
+        const queriesResponse = await axios.get('https://aryaai-travel-agent.onrender.com/admin/queries');
         setRecentQueries(queriesResponse.data.slice(-5));
       } catch (err) {
         console.error('Error fetching admin data:', err);

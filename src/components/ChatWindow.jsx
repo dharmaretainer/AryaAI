@@ -65,7 +65,7 @@ export default function ChatWindow({ messages, isTyping }) {
             heightLeft -= pdfHeight;
           }
 
-          pdf.save('travel_plan.pdf');
+          pdf.save('AryaAI_travel_plan.pdf');
         })
         .catch((err) => {
           console.error('Error generating PDF:', err);

@@ -2,20 +2,38 @@ import requests
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
-import json
+from functools import wraps
+import os
+from dotenv import load_dotenv
 
 app = Flask(__name__)
 CORS(app)
+load_dotenv()
 
-# Simple in-memory storage for queries (in production, use a database)
 queries_db = []
 
-import os
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+API_KEY = os.getenv("OPENROUTER_API_KEY")
+
 headers = {
-    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+    "Authorization": f"Bearer {API_KEY}",
     "Content-Type": "application/json"
 }
+
+# ✅ Admin credentials
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "arya123"
+
+def check_auth(username, password):
+    return username == ADMIN_USERNAME and password == ADMIN_PASSWORD
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return jsonify({"message": "Authentication required"}), 401
+        return f(*args, **kwargs)
+    return decorated
 
 def store_query(data, response_text):
     """Store query data for analytics"""
@@ -37,9 +55,17 @@ def store_query(data, response_text):
 def chat():
     try:
         data = request.get_json()
-       
+        
+        allowed_keywords = [
+            "travel", "trip", "itinerary", "vacation", "holiday", "place", 
+            "tour", "destination", "stay", "hotel", "food", "budget", 
+            "days", "location", "guide", "tourist", "explore", "plan"
+        ]
+
         if 'prompt' in data and data['prompt'].strip():
-            prompt = data['prompt']
+            prompt = data['prompt'].lower()
+            if not any(keyword in prompt for keyword in allowed_keywords):
+                return jsonify({"response": "Sorry, I can only help with travel-related queries like planning trips, destinations, itineraries, etc."})
         else:
             destination = data.get("destination", "Kashmir")
             days = data.get("days", "5")
@@ -53,59 +79,54 @@ def chat():
 
         payload = {
             "model": "meta-llama/llama-3-8b-instruct",
-            "messages": [
-                {"role": "user", "content": prompt}
-            ],
-            # "max_tokens": 300
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": 300
         }
 
         response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=payload)
         result = response.json()
-
         reply = result["choices"][0]["message"]["content"]
-        
-        # Store the query for analytics
+
         store_query(data, reply)
-        
         return jsonify({"response": reply})
 
     except Exception as e:
         return jsonify({"response": f"Error: {str(e)}"}), 500
 
+# 🔐 Admin-only: Get all queries
 @app.route('/admin/queries', methods=['GET'])
+@require_auth
 def get_queries():
-    """Get all queries for admin dashboard"""
     return jsonify(queries_db)
 
+# 🔐 Admin-only: Get analytics
 @app.route('/admin/analytics', methods=['GET'])
+@require_auth
 def get_analytics():
-    """Get analytics data for admin dashboard"""
     if not queries_db:
         return jsonify({
             "totalQueries": 0,
             "popularDestinations": [],
             "recentActivity": []
         })
-    
-    # Calculate popular destinations
+
     destinations = {}
     for query in queries_db:
         dest = query.get("destination", "Unknown")
         destinations[dest] = destinations.get(dest, 0) + 1
-    
+
     popular_destinations = [
         {"name": dest, "count": count} 
         for dest, count in sorted(destinations.items(), key=lambda x: x[1], reverse=True)[:5]
     ]
-    
-    # Generate recent activity
-    recent_activity = []
-    for query in queries_db[-5:]:  # Last 5 queries
-        recent_activity.append({
+
+    recent_activity = [
+        {
             "time": query["timestamp"],
             "action": f"Query for {query['destination']}"
-        })
-    
+        } for query in queries_db[-10:]
+    ]
+
     return jsonify({
         "totalQueries": len(queries_db),
         "popularDestinations": popular_destinations,

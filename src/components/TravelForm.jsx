@@ -68,7 +68,7 @@ const TravelForm = ({ onResponse }) => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post("http://127.0.0.1:5000/chat", { prompt: voicePrompt });
+      const res = await axios.post("https://aryaai-travel-agent.onrender.com/chat", { prompt: voicePrompt });
       onResponse(res.data.response);
     } catch {
       onResponse("Error: Could not connect to server.");
@@ -136,7 +136,7 @@ const TravelForm = ({ onResponse }) => {
     setLoading(true);
     setError("");
     try {
-      const res = await axios.post("http://127.0.0.1:5000/chat", formData);
+      const res = await axios.post(" https://aryaai-travel-agent.onrender.com/chat", formData);
       onResponse(res.data.response);
     } catch {
       onResponse("Error: Could not connect to server.");
@@ -231,7 +231,7 @@ const TravelForm = ({ onResponse }) => {
           disabled={loading || isListeningPrompt}
         >
           <span role="img" aria-label="mic">🎤</span>
-          {isListeningPrompt ? "Listening..." : "Speak your travel request"}
+          {isListeningPrompt ? "Listening..." : "Speak your travel request(include keywords like plan , trip , holiday , vacation) "}
         </button>
         <textarea
           className="mt-3 w-full rounded-lg border border-gray-300 p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
